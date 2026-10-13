@@ -34,7 +34,8 @@ export const MAIN_NAV: NavItem[] = [
       { label: "Parent Guideline", href: "/parent-guideline", description: "Parent-school partnership for student growth" },
       { label: "General Rules", href: "/general-rule", description: "Attendance, health, PTM, and leave procedures" },
       { label: "Co-curricular Activities", href: "/co-curricular-activities", description: "Sports, performing arts, fests, and Olympiads" },
-      { label: "Transfer Certificate (TC)", href: "/transfer-certificate", description: "TC issuance procedures & application guidelines" }
+      { label: "Transfer Certificate (TC)", href: "/transfer-certificate", description: "TC issuance procedures & application guidelines" },
+      { label: "Careers & Vacancies", href: "/career", description: "Current job openings, faculty eligibility & application" }
     ]
   },
   { label: "Our Inspiration", href: "/our-inspiration" },
@@ -51,7 +52,6 @@ export const MAIN_NAV: NavItem[] = [
   { label: "Public Disclosure", href: "/public-disclosure" },
   { label: "Gallery", href: "/gallery" },
   { label: "Blogs", href: "/blogs" },
-  { label: "Career", href: "/career" },
   { label: "Contact Us", href: "/contact-us" }
 ];
 
