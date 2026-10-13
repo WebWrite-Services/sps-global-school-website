@@ -5,6 +5,7 @@ import AdmissionCTASection from "@/components/home/AdmissionCTASection";
 import { createClient } from "@/lib/supabase/server";
 import GalleryGrid from "@/components/ui/GalleryGrid";
 
+export const instant = false;
 
 export default async function GalleryPage() {
   const supabase = await createClient();

@@ -8,6 +8,7 @@ import AdmissionCTASection from "@/components/home/AdmissionCTASection";
 import { generateSchoolMetadata } from "@/lib/seo";
 import { createClient } from "@/lib/supabase/server";
 
+export const instant = false;
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;

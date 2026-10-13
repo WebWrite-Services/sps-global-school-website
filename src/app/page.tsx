@@ -11,6 +11,7 @@ import AdmissionCTASection from "@/components/home/AdmissionCTASection";
 import ContactMapSection from "@/components/home/ContactMapSection";
 import { createClient } from "@/lib/supabase/server";
 
+export const instant = false;
 
 export default async function HomePage() {
   // Fetch active banners from Supabase
