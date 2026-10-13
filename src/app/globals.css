@@ -1,26 +1,154 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --font-manrope: var(--font-heading, "Manrope", system-ui, sans-serif);
+  --font-inter: var(--font-body, "Inter", system-ui, sans-serif);
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Brand Color System */
+  --color-burgundy: #A50026;
+  --color-burgundy-dark: #85001F;
+  --color-burgundy-light: #C21338;
+  --color-pink: #FCE5E9;
+  --color-pink-subtle: #FFF7F8;
+  --color-gold: #FFC52E;
+  --color-gold-hover: #E5AD1F;
+  --color-beige: #E4D7A5;
+  --color-beige-subtle: #FAF7EE;
+  --color-dark: #242424;
+  --color-dark-muted: #626262;
+  --color-surface-gray: #F5F5F5;
+  --color-border: #E5E5E5;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter);
+  color: #242424;
+  background-color: #FFFFFF;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-manrope);
+  color: #242424;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+::-webkit-scrollbar-thumb {
+  background: #A50026;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #85001F;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection */
+::selection {
+  background: #A50026;
+  color: #FFFFFF;
+}
+
+/* ============================================================
+   GLOBAL ANIMATIONS
+   ============================================================ */
+
+/* Fade in up — used for hero content, section entries */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade in — used for overlays, modals */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Slide in from left */
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Slide in from right */
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Hero slider fade */
+@keyframes heroCrossfade {
+  0%   { opacity: 0; transform: scale(1.04); }
+  8%   { opacity: 1; transform: scale(1); }
+  33%  { opacity: 1; transform: scale(1); }
+  40%  { opacity: 0; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1); }
+}
+
+/* Pulse glow (used for CTA buttons) */
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(165, 0, 38, 0.4); }
+  50%       { box-shadow: 0 0 0 8px rgba(165, 0, 38, 0); }
+}
+
+/* Float bounce (floating buttons) */
+@keyframes floatBounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-4px); }
+}
+
+/* Utility classes */
+.animate-fadeInUp     { animation: fadeInUp 0.65s ease both; }
+.animate-fadeIn       { animation: fadeIn 0.45s ease both; }
+.animate-slideInLeft  { animation: slideInLeft 0.65s ease both; }
+.animate-slideInRight { animation: slideInRight 0.65s ease both; }
+.animate-pulseGlow    { animation: pulseGlow 2s ease-in-out infinite; }
+.animate-floatBounce  { animation: floatBounce 2.5s ease-in-out infinite; }
+
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+
+/* Card hover lift */
+.card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+}
+
+/* Icon: force white on group-hover across all cards */
+.group:hover .icon-hover-white svg,
+.group:hover .icon-hover-white,
+.group:hover .group-hover\:text-white,
+.group:hover svg.group-hover\:text-white,
+.group:hover [class*="group-hover:text-white"] svg,
+.group:hover .icon-box svg,
+.group:hover .icon-box,
+.group:hover [class*="group-hover:bg-[#A50026]"] svg,
+.group:hover [class*="group-hover:bg-[#85001F]"] svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
