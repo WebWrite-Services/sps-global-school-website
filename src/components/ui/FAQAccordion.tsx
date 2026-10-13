@@ -14,18 +14,16 @@ interface FAQAccordionProps {
 }
 
 export default function FAQAccordion({ items, defaultOpenIndex = 0 }: FAQAccordionProps) {
-  const [openIndices, setOpenIndices] = useState<number[]>([defaultOpenIndex]);
+  const [openIndex, setOpenIndex] = useState<number | null>(defaultOpenIndex);
 
   const toggle = (index: number) => {
-    setOpenIndices((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
-    );
+    setOpenIndex((prev) => (prev === index ? null : index));
   };
 
   return (
     <div className="space-y-3 max-w-4xl mx-auto">
       {items.map((item, index) => {
-        const isOpen = openIndices.includes(index);
+        const isOpen = openIndex === index;
         return (
           <div
             key={index}

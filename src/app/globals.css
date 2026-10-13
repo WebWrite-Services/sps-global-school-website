@@ -33,10 +33,24 @@ h1, h2, h3, h4, h5, h6 {
   color: inherit;
 }
 
-/* PageHero Title Guarantee - Must always be 100% white */
+/* PageHero & Footer Title Guarantee - Must always be 100% white */
 .page-hero-title,
 [data-hero] h1,
-[data-hero] h2 {
+[data-hero] h2,
+footer h1,
+footer h2,
+footer h3,
+footer h4,
+footer h5,
+footer h6,
+[class*="bg-[#A50026]"] h1,
+[class*="bg-[#A50026]"] h2,
+[class*="bg-[#A50026]"] h3,
+[class*="bg-[#A50026]"] h4,
+[class*="bg-[#85001F]"] h1,
+[class*="bg-[#85001F]"] h2,
+[class*="bg-[#85001F]"] h3,
+[class*="bg-[#85001F]"] h4 {
   color: #ffffff !important;
 }
 

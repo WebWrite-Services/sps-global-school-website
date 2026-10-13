@@ -116,7 +116,10 @@ export default function SiteFooter() {
             {/* Columns 2-4: Structured Links */}
             {FOOTER_COLUMNS.slice(0, 3).map((col) => (
               <div key={col.title} className="space-y-4">
-                <h4 className="font-bold text-sm uppercase tracking-wider text-white border-b-2 border-[#A50026] pb-2 inline-block">
+                <h4
+                  style={{ color: "#ffffff" }}
+                  className="font-extrabold text-sm uppercase tracking-wider text-white !text-white border-b-2 border-[#A50026] pb-2 inline-block"
+                >
                   {col.title}
                 </h4>
                 <ul className="space-y-2.5">
@@ -137,7 +140,10 @@ export default function SiteFooter() {
 
             {/* Column 5: Contact & Admission Desk */}
             <div className="space-y-4">
-              <h4 className="font-bold text-sm uppercase tracking-wider text-white border-b-2 border-[#A50026] pb-2 inline-block">
+              <h4
+                style={{ color: "#ffffff" }}
+                className="font-extrabold text-sm uppercase tracking-wider text-white !text-white border-b-2 border-[#A50026] pb-2 inline-block"
+              >
                 Contact &amp; Visit
               </h4>
               <div className="space-y-3">
@@ -189,8 +195,16 @@ export default function SiteFooter() {
                 Copyright © 2026{" "}
                 <span className="text-white font-semibold">{SCHOOL_INFO.name}</span>. All Rights Reserved.
               </p>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Designed &amp; Developed for SPS Educational Group | Jaswantnagar, Etawah (UP)
+              <p className="text-xs text-gray-400 mt-1 flex items-center gap-1.5 flex-wrap">
+                <span>Designed &amp; Developed by</span>
+                <a
+                  href="https://www.webwrite.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#FFC52E] hover:text-white font-bold transition-colors underline underline-offset-2"
+                >
+                  WebWrite Services (www.webwrite.in)
+                </a>
               </p>
             </div>
 

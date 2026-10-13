@@ -187,11 +187,17 @@ Contact: +91 7618307200 | Kaist, NH-19, Jaswantnagar, Etawah (UP)
         <div className="bg-[#A50026] px-6 py-5">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-white font-extrabold text-lg sm:text-xl flex items-center gap-2">
+              <h3
+                style={{ color: "#ffffff" }}
+                className="text-white !text-white font-extrabold text-lg sm:text-xl flex items-center gap-2"
+              >
                 <Search className="w-5 h-5 text-[#FFC52E]" />
-                Download Transfer Certificate (TC)
+                <span style={{ color: "#ffffff" }} className="text-white !text-white">Download Transfer Certificate (TC)</span>
               </h3>
-              <p className="text-white/90 text-xs sm:text-sm mt-1">
+              <p
+                style={{ color: "#ffffff" }}
+                className="text-white !text-white text-xs sm:text-sm mt-1 opacity-90"
+              >
                 Enter your Admission Number or registered mobile number to search and download your official TC.
               </p>
             </div>

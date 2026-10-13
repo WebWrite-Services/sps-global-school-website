@@ -4,7 +4,6 @@ import SchoolHighlights from "@/components/home/SchoolHighlights";
 import AdmissionStepsSection from "@/components/home/AdmissionStepsSection";
 import IntroductionSection from "@/components/home/IntroductionSection";
 import InfrastructureGrid from "@/components/home/InfrastructureGrid";
-import StudentAchievementsSection from "@/components/home/StudentAchievementsSection";
 import AdmissionFeesGlanceSection from "@/components/home/AdmissionFeesGlanceSection";
 import TestimonialsSection from "@/components/home/TestimonialsSection";
 import AdmissionFAQSection from "@/components/home/AdmissionFAQSection";
@@ -29,22 +28,19 @@ export default function HomePage() {
       {/* 5. World-Class Infrastructure */}
       <InfrastructureGrid />
 
-      {/* 6. Student Achievements & Board Results */}
-      <StudentAchievementsSection />
-
-      {/* 7. Fee Structure at a Glance */}
+      {/* 6. Fee Structure at a Glance */}
       <AdmissionFeesGlanceSection />
 
-      {/* 8. Testimonials (What Parents Say) */}
+      {/* 7. Testimonials (What Parents Say) */}
       <TestimonialsSection />
 
-      {/* 9. Admission FAQ Accordion */}
+      {/* 8. Admission FAQ Accordion */}
       <AdmissionFAQSection />
 
-      {/* 10. Admission Call-to-Action Strip */}
+      {/* 9. Admission Call-to-Action Strip */}
       <AdmissionCTASection />
 
-      {/* 11. Location & Interactive Campus Map */}
+      {/* 10. Location & Interactive Campus Map */}
       <ContactMapSection />
     </>
   );
