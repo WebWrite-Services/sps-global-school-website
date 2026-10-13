@@ -1,0 +1,120 @@
+/* Admin portal specific styles */
+
+/* Sidebar */
+.admin-sidebar {
+  transition: width 0.25s ease, transform 0.25s ease;
+}
+
+/* Table */
+.admin-table th {
+  background: #F5F5F5;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #626262;
+}
+
+.admin-table tr:hover td {
+  background: #FFF7F8;
+}
+
+/* Status badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.badge-new        { background: #DBEAFE; color: #1E40AF; }
+.badge-published  { background: #D1FAE5; color: #065F46; }
+.badge-draft      { background: #F3F4F6; color: #374151; }
+.badge-contacted  { background: #E0E7FF; color: #3730A3; }
+.badge-follow-up  { background: #FEF3C7; color: #92400E; }
+.badge-converted  { background: #D1FAE5; color: #065F46; }
+.badge-closed     { background: #F3F4F6; color: #6B7280; }
+.badge-unread     { background: #FEE2E2; color: #991B1B; }
+.badge-read       { background: #F3F4F6; color: #374151; }
+.badge-replied    { background: #D1FAE5; color: #065F46; }
+.badge-spam       { background: #FEF3C7; color: #92400E; }
+.badge-scheduled  { background: #E0E7FF; color: #3730A3; }
+.badge-archived   { background: #F3F4F6; color: #6B7280; }
+.badge-active     { background: #D1FAE5; color: #065F46; }
+.badge-inactive   { background: #F3F4F6; color: #6B7280; }
+
+/* Rich text editor */
+.tiptap-editor .ProseMirror {
+  min-height: 320px;
+  padding: 16px;
+  outline: none;
+  font-family: var(--font-inter, 'Inter', sans-serif);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: #242424;
+}
+
+.tiptap-editor .ProseMirror p { margin-bottom: 0.75rem; }
+.tiptap-editor .ProseMirror h1 { font-size: 1.75rem; font-weight: 700; margin: 1.25rem 0 0.5rem; }
+.tiptap-editor .ProseMirror h2 { font-size: 1.375rem; font-weight: 700; margin: 1rem 0 0.5rem; }
+.tiptap-editor .ProseMirror h3 { font-size: 1.125rem; font-weight: 600; margin: 0.75rem 0 0.25rem; }
+.tiptap-editor .ProseMirror ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 0.75rem; }
+.tiptap-editor .ProseMirror ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 0.75rem; }
+.tiptap-editor .ProseMirror blockquote { border-left: 3px solid #A50026; padding-left: 1rem; color: #626262; font-style: italic; }
+.tiptap-editor .ProseMirror a { color: #A50026; text-decoration: underline; }
+.tiptap-editor .ProseMirror img { max-width: 100%; border-radius: 6px; }
+.tiptap-editor .ProseMirror .is-editor-empty::before { color: #9CA3AF; content: attr(data-placeholder); float: left; height: 0; pointer-events: none; }
+
+/* Upload dropzone */
+.dropzone {
+  border: 2px dashed #E5E5E5;
+  border-radius: 12px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.dropzone:hover, .dropzone.drag-over {
+  border-color: #A50026;
+  background: #FFF7F8;
+}
+
+/* Upload progress bar */
+.progress-bar {
+  height: 4px;
+  background: #E5E5E5;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #A50026, #FFC52E);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* Admin input styles */
+.admin-input {
+  width: 100%;
+  border: 1.5px solid #E5E5E5;
+  border-radius: 8px;
+  padding: 9px 13px;
+  font-size: 0.9rem;
+  background: #FFFFFF;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+.admin-input:focus {
+  border-color: #A50026;
+  box-shadow: 0 0 0 3px rgba(165, 0, 38, 0.1);
+}
+.admin-input.error {
+  border-color: #EF4444;
+}
+
+/* Scrollable sidebar nav */
+.admin-nav-scroll {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(165, 0, 38, 0.3) transparent;
+}

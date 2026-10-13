@@ -9,12 +9,48 @@ import TestimonialsSection from "@/components/home/TestimonialsSection";
 import AdmissionFAQSection from "@/components/home/AdmissionFAQSection";
 import AdmissionCTASection from "@/components/home/AdmissionCTASection";
 import ContactMapSection from "@/components/home/ContactMapSection";
+import { createClient } from "@/lib/supabase/server";
 
-export default function HomePage() {
+
+export default async function HomePage() {
+  // Fetch active banners from Supabase
+  let bannerSlides: {
+    id: string;
+    image: string;
+    alt: string;
+    heading?: string;
+    description?: string;
+    primaryButtonText?: string;
+    primaryButtonUrl?: string;
+  }[] = [];
+
+  try {
+    const supabase = await createClient();
+    const { data: banners } = await supabase
+      .from("homepage_banners")
+      .select("id, internal_name, heading, description, desktop_image_url, primary_button_text, primary_button_url, secondary_button_text, secondary_button_url")
+      .eq("is_active", true)
+      .order("display_order", { ascending: true });
+
+    if (banners && banners.length > 0) {
+      bannerSlides = banners.map((b: any) => ({
+        id: b.id,
+        image: b.desktop_image_url || "",
+        alt: b.heading || b.internal_name || "SPS Global School Banner",
+        heading: b.heading,
+        description: b.description,
+        primaryButtonText: b.primary_button_text,
+        primaryButtonUrl: b.primary_button_url,
+      })).filter((b: any) => b.image); // only include banners with images
+    }
+  } catch {
+    // Gracefully fallback to default slides on error
+  }
+
   return (
     <>
       {/* 1. Hero Banner with visible background photo slider & Right Corner Admission Form */}
-      <HeroBanner />
+      <HeroBanner slides={bannerSlides.length > 0 ? bannerSlides : undefined} />
 
       {/* 2. School Highlights */}
       <SchoolHighlights />

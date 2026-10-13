@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useRef } from "react";
-import Link from "next/link";
+import React, { useState } from "react";
 import Image from "next/image";
-import { FileText, CheckCircle2, Phone, Search, AlertCircle, Download, Loader2, Info, Printer, X, Sparkles } from "lucide-react";
+import { FileText, CheckCircle2, Phone, Search, AlertCircle, Download, Loader2, Info, Printer, X, Sparkles, ExternalLink } from "lucide-react";
 import PageHero from "@/components/ui/PageHero";
 import AdmissionCTASection from "@/components/home/AdmissionCTASection";
 import { SCHOOL_INFO } from "@/data/school";
+import { createClient } from "@/lib/supabase/client";
 
 const steps = [
   {
@@ -31,153 +31,81 @@ const steps = [
   }
 ];
 
-interface TCRecord {
-  admissionNo: string;
-  tcNo: string;
-  name: string;
-  fatherName: string;
-  motherName: string;
-  dob: string;
-  class: string;
-  year: string;
-  status: "Issued" | "Pending Verification";
-  issueDate: string;
-  conduct: string;
+interface TCDocument {
+  id: string;
+  student_name: string;
+  admission_number: string;
+  guardian_name: string;
+  class_name: string;
+  academic_session: string;
+  tc_number: string;
+  issue_date: string | null;
+  storage_path: string;
+  status: string;
+  created_at: string;
 }
-
-const MOCK_TC_RECORDS: Record<string, TCRecord> = {
-  "SPS2024001": {
-    admissionNo: "SPS2024001",
-    tcNo: "TC/2024/0142",
-    name: "Aarav Sharma",
-    fatherName: "Rajesh Sharma",
-    motherName: "Sunita Sharma",
-    dob: "14/08/2009",
-    class: "Class X",
-    year: "2023-24",
-    status: "Issued",
-    issueDate: "24/04/2024",
-    conduct: "Exemplary"
-  },
-  "SPS2024002": {
-    admissionNo: "SPS2024002",
-    tcNo: "TC/2024/0189",
-    name: "Priya Singh",
-    fatherName: "Devendra Singh",
-    motherName: "Manju Singh",
-    dob: "02/11/2011",
-    class: "Class VIII",
-    year: "2023-24",
-    status: "Pending Verification",
-    issueDate: "Under Process",
-    conduct: "Good"
-  },
-  "7618307200": {
-    admissionNo: "SPS2023089",
-    tcNo: "TC/2023/0098",
-    name: "Rohan Verma",
-    fatherName: "Alok Verma",
-    motherName: "Rekha Verma",
-    dob: "19/05/2012",
-    class: "Class VII",
-    year: "2022-23",
-    status: "Issued",
-    issueDate: "15/03/2023",
-    conduct: "Good"
-  }
-};
 
 function TCLookupForm() {
   const [searchType, setSearchType] = useState<"admission" | "phone">("admission");
   const [query, setQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-  const [result, setResult] = useState<null | { found: boolean; data?: TCRecord }>(null);
+  const [result, setResult] = useState<null | { found: boolean; data?: TCDocument }>(null);
   const [error, setError] = useState("");
-  const [modalRecord, setModalRecord] = useState<TCRecord | null>(null);
+  const supabase = createClient();
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) {
-      setError("Please enter your admission number or phone number.");
-      return;
-    }
-    if (searchType === "phone" && !/^\d{10}$/.test(query.replace(/\D/g, ""))) {
-      setError("Please enter a valid 10-digit mobile number.");
+      setError("Please enter your admission number.");
       return;
     }
     setError("");
     setIsSearching(true);
     setResult(null);
 
-    // Simulate search processing delay
-    await new Promise((r) => setTimeout(r, 900));
+    try {
+      const cleanQuery = query.trim();
 
-    const key = query.trim().toUpperCase().replace(/\s/g, "");
-    const phoneKey = query.replace(/\D/g, "");
+      // Search by admission_number or tc_number
+      const { data, error: dbError } = await supabase
+        .from("tc_documents")
+        .select("*")
+        .or(`admission_number.ilike.${cleanQuery},tc_number.ilike.${cleanQuery}`)
+        .maybeSingle();
 
-    let found = MOCK_TC_RECORDS[key] || MOCK_TC_RECORDS[phoneKey];
-
-    // If user typed a custom admission number not in predefined list, generate a verified issued record
-    if (!found && query.trim().length >= 4) {
-      found = {
-        admissionNo: key,
-        tcNo: `TC/2024/${Math.floor(1000 + Math.random() * 9000)}`,
-        name: "Student Candidate",
-        fatherName: "Guardian Name",
-        motherName: "Mother Name",
-        dob: "15/07/2010",
-        class: "Class IX",
-        year: "2024-25",
-        status: "Issued",
-        issueDate: "12/04/2024",
-        conduct: "Very Good"
-      };
-    }
-
-    if (found) {
-      setResult({ found: true, data: found });
-    } else {
+      if (dbError || !data) {
+        setResult({ found: false });
+      } else {
+        setResult({ found: true, data });
+      }
+    } catch {
       setResult({ found: false });
     }
+
     setIsSearching(false);
   };
 
-  const handlePrint = () => {
-    window.print();
+  const openPdf = (doc: TCDocument) => {
+    if (doc.storage_path) {
+      if (doc.storage_path.startsWith("http")) {
+        window.open(doc.storage_path, "_blank");
+        return;
+      }
+      const parts = doc.storage_path.split("/");
+      const bucket = parts[0];
+      const path = parts.slice(1).join("/");
+      const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+      if (data?.publicUrl) {
+        window.open(data.publicUrl, "_blank");
+      }
+    }
   };
 
-  const handleDownload = (rec: TCRecord) => {
-    // Generate downloadable text certificate
-    const content = `===============================================================
-               SPS GLOBAL SCHOOL, JASWANTNAGAR (ETAWAH)
-              Affiliated to CBSE, New Delhi (Affil No: 2134255)
-                         TRANSFER CERTIFICATE
-===============================================================
-TC Serial No       : ${rec.tcNo}
-Admission Number   : ${rec.admissionNo}
-Student Name       : ${rec.name}
-Father's Name      : ${rec.fatherName}
-Mother's Name      : ${rec.motherName}
-Date of Birth      : ${rec.dob}
-Class Last Studied : ${rec.class}
-Academic Session   : ${rec.year}
-Date of Issue      : ${rec.issueDate}
-Conduct & Character: ${rec.conduct}
-Status             : ${rec.status}
-===============================================================
-Issued under the authority of the Principal, SPS Global School.
-Contact: +91 7618307200 | Kaist, NH-19, Jaswantnagar, Etawah (UP)
-===============================================================`;
-
-    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `SPS_Transfer_Certificate_${rec.admissionNo}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const formatDate = (date: string | null) => {
+    if (!date) return "—";
+    return new Date(date).toLocaleDateString("en-IN", {
+      day: "2-digit", month: "long", year: "numeric"
+    });
   };
 
   return (
@@ -198,7 +126,7 @@ Contact: +91 7618307200 | Kaist, NH-19, Jaswantnagar, Etawah (UP)
                 style={{ color: "#ffffff" }}
                 className="text-white !text-white text-xs sm:text-sm mt-1 opacity-90"
               >
-                Enter your Admission Number or registered mobile number to search and download your official TC.
+                Enter your Admission Number to search and download your official TC document.
               </p>
             </div>
             <span className="hidden sm:inline-flex items-center gap-1 bg-[#FFC52E] text-[#242424] font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider">
@@ -208,58 +136,22 @@ Contact: +91 7618307200 | Kaist, NH-19, Jaswantnagar, Etawah (UP)
         </div>
 
         <div className="p-6 sm:p-8 space-y-6">
-          {/* Search Type Toggle */}
-          <div className="flex rounded-xl border border-[#FCE5E9] overflow-hidden bg-white max-w-md mx-auto">
-            <button
-              onClick={() => { setSearchType("admission"); setResult(null); setError(""); }}
-              className={`flex-1 py-2.5 text-xs sm:text-sm font-semibold transition-colors cursor-pointer ${
-                searchType === "admission"
-                  ? "bg-[#A50026] text-white shadow-xs"
-                  : "text-[#626262] hover:text-[#A50026]"
-              }`}
-            >
-              Search by Admission Number
-            </button>
-            <button
-              onClick={() => { setSearchType("phone"); setResult(null); setError(""); }}
-              className={`flex-1 py-2.5 text-xs sm:text-sm font-semibold transition-colors cursor-pointer ${
-                searchType === "phone"
-                  ? "bg-[#A50026] text-white shadow-xs"
-                  : "text-[#626262] hover:text-[#A50026]"
-              }`}
-            >
-              Search by Mobile Number
-            </button>
-          </div>
-
           {/* Search Form */}
           <form onSubmit={handleSearch} className="max-w-xl mx-auto space-y-3.5">
             <div>
               <label className="block text-xs font-semibold text-[#242424] mb-1.5">
-                {searchType === "admission" ? "Student Admission Number" : "Registered Mobile Number"}{" "}
-                <span className="text-[#A50026]">*</span>
+                Student Admission Number <span className="text-[#A50026]">*</span>
               </label>
-              <div className="relative">
-                {searchType === "phone" && (
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-gray-500">
-                    +91
-                  </span>
-                )}
-                <input
-                  type={searchType === "phone" ? "tel" : "text"}
-                  placeholder={
-                    searchType === "admission"
-                      ? "e.g. SPS2024001 or any admission number"
-                      : "e.g. 7618307200"
-                  }
-                  value={query}
-                  onChange={(e) => { setQuery(e.target.value); setError(""); setResult(null); }}
-                  maxLength={searchType === "phone" ? 10 : 20}
-                  className={`w-full ${searchType === "phone" ? "pl-12" : "pl-4"} pr-4 py-3 text-sm rounded-xl border bg-white ${
-                    error ? "border-red-400 bg-red-50/20" : "border-gray-200"
-                  } focus:border-[#A50026] focus:ring-2 focus:ring-[#A50026]/20 outline-none transition-all shadow-xs`}
-                />
-              </div>
+              <input
+                type="text"
+                placeholder="e.g. SPS2024001"
+                value={query}
+                onChange={(e) => { setQuery(e.target.value); setError(""); setResult(null); }}
+                maxLength={25}
+                className={`w-full pl-4 pr-4 py-3 text-sm rounded-xl border bg-white ${
+                  error ? "border-red-400 bg-red-50/20" : "border-gray-200"
+                } focus:border-[#A50026] focus:ring-2 focus:ring-[#A50026]/20 outline-none transition-all shadow-xs`}
+              />
               {error && (
                 <p className="flex items-center gap-1 text-xs text-red-600 mt-1.5">
                   <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {error}
@@ -275,20 +167,20 @@ Contact: +91 7618307200 | Kaist, NH-19, Jaswantnagar, Etawah (UP)
               {isSearching ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin text-[#FFC52E]" />
-                  <span>Verifying Records in Database...</span>
+                  <span>Checking Records...</span>
                 </>
               ) : (
                 <>
                   <Search className="w-4 h-4 text-[#FFC52E]" />
-                  <span>Search &amp; Download TC</span>
+                  <span>Search TC Record</span>
                 </>
               )}
             </button>
           </form>
 
-          {/* Search Result Card */}
+          {/* Search Result */}
           {result && (
-            <div className={`max-w-xl mx-auto rounded-2xl border p-5 sm:p-6 animate-fadeInUp shadow-sm ${
+            <div className={`max-w-xl mx-auto rounded-2xl border p-5 sm:p-6 shadow-sm ${
               result.found
                 ? "bg-emerald-50/70 border-emerald-200"
                 : "bg-red-50 border-red-200"
@@ -298,66 +190,65 @@ Contact: +91 7618307200 | Kaist, NH-19, Jaswantnagar, Etawah (UP)
                   <div className="flex items-center justify-between border-b border-emerald-200 pb-3">
                     <div className="flex items-center gap-2 text-emerald-800 font-extrabold text-base">
                       <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                      Official TC Record Verified
+                      TC Record Found
                     </div>
                     <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
-                      result.data.status === "Issued"
+                      result.data.status === "active"
                         ? "bg-emerald-200 text-emerald-900"
                         : "bg-amber-100 text-amber-900"
                     }`}>
-                      {result.data.status}
+                      {result.data.status === "active" ? "Issued" : "Archived"}
                     </span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
                     <div>
                       <span className="text-gray-500 block text-xs">Student Name</span>
-                      <span className="font-bold text-[#242424]">{result.data.name}</span>
+                      <span className="font-bold text-[#242424]">{result.data.student_name}</span>
                     </div>
                     <div>
                       <span className="text-gray-500 block text-xs">Admission Number</span>
-                      <span className="font-mono font-bold text-[#A50026]">{result.data.admissionNo}</span>
+                      <span className="font-mono font-bold text-[#A50026]">{result.data.admission_number}</span>
                     </div>
+                    {result.data.tc_number && (
+                      <div>
+                        <span className="text-gray-500 block text-xs">TC Number</span>
+                        <span className="font-mono font-semibold text-[#242424]">{result.data.tc_number}</span>
+                      </div>
+                    )}
                     <div>
-                      <span className="text-gray-500 block text-xs">TC Serial Number</span>
-                      <span className="font-mono font-semibold text-[#242424]">{result.data.tcNo}</span>
+                      <span className="text-gray-500 block text-xs">Class</span>
+                      <span className="font-semibold text-[#242424]">{result.data.class_name} ({result.data.academic_session})</span>
                     </div>
-                    <div>
-                      <span className="text-gray-500 block text-xs">Class &amp; Session</span>
-                      <span className="font-semibold text-[#242424]">{result.data.class} ({result.data.year})</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-500 block text-xs">Issue Date</span>
-                      <span className="font-semibold text-[#242424]">{result.data.issueDate}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-500 block text-xs">Conduct</span>
-                      <span className="font-semibold text-emerald-800">{result.data.conduct}</span>
-                    </div>
+                    {result.data.guardian_name && (
+                      <div>
+                        <span className="text-gray-500 block text-xs">Guardian Name</span>
+                        <span className="font-semibold text-[#242424]">{result.data.guardian_name}</span>
+                      </div>
+                    )}
+                    {result.data.issue_date && (
+                      <div>
+                        <span className="text-gray-500 block text-xs">Date of Issue</span>
+                        <span className="font-semibold text-[#242424]">{formatDate(result.data.issue_date)}</span>
+                      </div>
+                    )}
                   </div>
 
-                  {result.data.status === "Issued" ? (
-                    <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
+                  {result.data.status === "active" && result.data.storage_path ? (
+                    <div className="pt-2">
                       <button
-                        onClick={() => handleDownload(result.data!)}
-                        className="flex-1 inline-flex items-center justify-center gap-2 bg-[#A50026] hover:bg-[#85001F] text-white font-bold py-2.5 px-4 rounded-xl text-xs sm:text-sm shadow-md transition-all cursor-pointer"
+                        onClick={() => openPdf(result.data!)}
+                        className="w-full inline-flex items-center justify-center gap-2 bg-[#A50026] hover:bg-[#85001F] text-white font-bold py-2.5 px-4 rounded-xl text-xs sm:text-sm shadow-md transition-all cursor-pointer"
                       >
-                        <Download className="w-4 h-4 text-[#FFC52E]" />
-                        <span>Download TC Certificate</span>
-                      </button>
-                      <button
-                        onClick={() => setModalRecord(result.data!)}
-                        className="inline-flex items-center justify-center gap-2 bg-white hover:bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold py-2.5 px-4 rounded-xl text-xs sm:text-sm transition-all cursor-pointer"
-                      >
-                        <Printer className="w-4 h-4 text-[#A50026]" />
-                        <span>View / Print Certificate</span>
+                        <ExternalLink className="w-4 h-4 text-[#FFC52E]" />
+                        <span>View / Download TC Document (PDF)</span>
                       </button>
                     </div>
                   ) : (
                     <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-start gap-2">
                       <Info className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
                       <span>
-                        Your Transfer Certificate is currently under administrative verification. Please visit the school office or call the helpline.
+                        Your Transfer Certificate is currently under administrative verification. Please visit the school office or call the helpline for further assistance.
                       </span>
                     </div>
                   )}
@@ -369,7 +260,7 @@ Contact: +91 7618307200 | Kaist, NH-19, Jaswantnagar, Etawah (UP)
                     No TC Record Found
                   </div>
                   <p className="text-xs sm:text-sm text-red-700">
-                    No active TC record matches this admission number. Please verify the number or contact the school administrative desk.
+                    No TC record matches the entered admission number. Please verify the number or contact the school administrative desk.
                   </p>
                   <a
                     href={`tel:${SCHOOL_INFO.primaryPhone}`}
@@ -383,141 +274,15 @@ Contact: +91 7618307200 | Kaist, NH-19, Jaswantnagar, Etawah (UP)
             </div>
           )}
 
-          {/* Quick Demo Helper Hint */}
+          {/* Info Note */}
           <div className="max-w-xl mx-auto bg-[#FAF7EE] border border-[#E4D7A5] rounded-xl px-4 py-3 text-xs text-[#626262] flex items-start gap-2">
             <Info className="w-4 h-4 text-[#A50026] shrink-0 mt-0.5" />
             <span>
-              <strong>Tip:</strong> Try admission number <strong>SPS2024001</strong>, <strong>7618307200</strong>, or enter any student admission number to instantly view and download the official certificate.
+              <strong>Note:</strong> Only TCs issued by the school administration will appear here. Contact the school office if you need assistance with your TC application.
             </span>
           </div>
         </div>
       </div>
-
-      {/* ── Transfer Certificate Preview / Printable Modal ───── */}
-      {modalRecord && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border-4 border-[#A50026] p-6 sm:p-8 space-y-6 relative">
-            <button
-              onClick={() => setModalRecord(null)}
-              className="absolute top-4 right-4 p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors cursor-pointer"
-              aria-label="Close modal"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            {/* Official TC Header */}
-            <div className="text-center border-b-2 border-dashed border-[#A50026] pb-5 space-y-1">
-              <div className="inline-block relative h-16 w-56 mb-2">
-                <Image
-                  src="/images/branding/sps-logo-header.png"
-                  alt="SPS Global School"
-                  fill
-                  sizes="224px"
-                  className="object-contain"
-                />
-              </div>
-              <p className="text-xs text-gray-600 font-medium">
-                N.H 2 KAISTH, JASWANTNAGAR, ETAWAH (UP) • PIN: 206245
-              </p>
-              <p className="text-[11px] text-[#A50026] font-bold">
-                Affiliated to CBSE, New Delhi • Affiliation No: {SCHOOL_INFO.affiliationNumber} • School Code: {SCHOOL_INFO.schoolCode}
-              </p>
-              <div className="pt-2">
-                <span className="inline-block bg-[#85001F] text-white font-extrabold text-sm sm:text-base px-6 py-1 rounded-full uppercase tracking-widest shadow-xs">
-                  Transfer Certificate
-                </span>
-              </div>
-            </div>
-
-            {/* TC Body Table */}
-            <div className="space-y-3 text-xs sm:text-sm text-gray-800">
-              <div className="flex justify-between border-b pb-2 text-xs">
-                <div>
-                  <span className="text-gray-500">TC Serial No: </span>
-                  <span className="font-bold font-mono text-[#A50026]">{modalRecord.tcNo}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Admission No: </span>
-                  <span className="font-bold font-mono text-[#A50026]">{modalRecord.admissionNo}</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                <div>
-                  <span className="text-gray-500 block text-xs">1. Name of the Student:</span>
-                  <span className="font-bold text-[#242424] text-sm">{modalRecord.name}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500 block text-xs">2. Date of Birth:</span>
-                  <span className="font-bold text-[#242424] text-sm">{modalRecord.dob}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500 block text-xs">3. Father&apos;s / Guardian&apos;s Name:</span>
-                  <span className="font-bold text-[#242424] text-sm">{modalRecord.fatherName}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500 block text-xs">4. Mother&apos;s Name:</span>
-                  <span className="font-bold text-[#242424] text-sm">{modalRecord.motherName}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500 block text-xs">5. Class in Which Last Studied:</span>
-                  <span className="font-bold text-[#242424] text-sm">{modalRecord.class}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500 block text-xs">6. Academic Session:</span>
-                  <span className="font-bold text-[#242424] text-sm">{modalRecord.year}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500 block text-xs">7. General Conduct &amp; Character:</span>
-                  <span className="font-bold text-emerald-800 text-sm">{modalRecord.conduct}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500 block text-xs">8. Date of Issue of Certificate:</span>
-                  <span className="font-bold text-[#242424] text-sm">{modalRecord.issueDate}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Official Stamps & Signatures */}
-            <div className="pt-8 border-t border-gray-200 flex items-end justify-between text-xs text-center">
-              <div>
-                <div className="w-24 h-12 border-b border-gray-400 mx-auto" />
-                <span className="text-gray-600 font-semibold block mt-1">Class Teacher</span>
-              </div>
-              <div>
-                <div className="w-16 h-16 rounded-full border-2 border-[#A50026] text-[#A50026] flex items-center justify-center font-bold text-[9px] mx-auto uppercase">
-                  SPS SEAL
-                </div>
-                <span className="text-gray-500 text-[10px] block mt-1">Official Stamp</span>
-              </div>
-              <div>
-                <div className="w-28 h-12 border-b border-gray-400 mx-auto flex items-end justify-center font-serif italic text-sm text-[#85001F]">
-                  Principal
-                </div>
-                <span className="text-gray-600 font-semibold block mt-1">Principal Signature</span>
-              </div>
-            </div>
-
-            {/* Modal Actions */}
-            <div className="pt-4 flex gap-3">
-              <button
-                onClick={handlePrint}
-                className="flex-1 inline-flex items-center justify-center gap-2 bg-[#A50026] hover:bg-[#85001F] text-white font-bold py-2.5 px-4 rounded-xl text-sm transition-colors cursor-pointer"
-              >
-                <Printer className="w-4 h-4 text-[#FFC52E]" />
-                <span>Print Official Certificate</span>
-              </button>
-              <button
-                onClick={() => handleDownload(modalRecord)}
-                className="flex-1 inline-flex items-center justify-center gap-2 bg-[#FFC52E] hover:bg-[#E6B025] text-[#242424] font-bold py-2.5 px-4 rounded-xl text-sm transition-colors cursor-pointer"
-              >
-                <Download className="w-4 h-4 text-[#85001F]" />
-                <span>Save Certificate File</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
@@ -538,10 +303,10 @@ export default function TransferCertificatePage() {
       <div className="py-16 lg:py-24 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-14">
 
-          {/* Interactive TC Lookup & Download Form */}
+          {/* Interactive TC Lookup */}
           <TCLookupForm />
 
-          {/* Top Informational Banner */}
+          {/* How to Apply */}
           <div className="bg-[#FFF7F8] p-6 sm:p-8 rounded-3xl border border-[#FCE5E9] space-y-3">
             <span className="text-xs font-bold text-[#A50026] uppercase tracking-wider">
               CBSE Mandated Procedure
@@ -556,16 +321,14 @@ export default function TransferCertificatePage() {
             </p>
           </div>
 
-          {/* Step Sequence */}
+          {/* Steps */}
           <div className="space-y-4">
-            <h3 className="font-extrabold text-lg text-[#242424]">
-              Step-by-Step Procedure:
-            </h3>
+            <h3 className="font-extrabold text-lg text-[#242424]">Step-by-Step Procedure:</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {steps.map((st, idx) => (
                 <div
                   key={st.step}
-                  className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-2 hover:border-[#A50026] hover:shadow-md transition-all animate-fadeInUp"
+                  className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-2 hover:border-[#A50026] hover:shadow-md transition-all"
                   style={{ animationDelay: `${idx * 0.1}s` }}
                 >
                   <div className="flex items-center gap-2">
@@ -601,7 +364,7 @@ export default function TransferCertificatePage() {
             </ul>
           </div>
 
-          {/* Contact Office Desk */}
+          {/* Contact */}
           <div className="bg-[#FFF7F8] p-6 rounded-2xl border border-[#FCE5E9] flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
               <h4 className="font-bold text-sm text-[#242424]">

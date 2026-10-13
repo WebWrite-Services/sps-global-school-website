@@ -47,10 +47,33 @@ export default function AdmissionEnquiryForm({
     if (!validate()) return;
 
     setIsSubmitting(true);
-    // Simulate real backend processing delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
-    setIsSuccess(true);
+    try {
+      const res = await fetch('/api/admissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          parent_name: formData.parentName.trim(),
+          student_name: formData.studentName.trim(),
+          phone: formData.mobile.trim(),
+          email: formData.email.trim(),
+          city: formData.city,
+          class_applying_for: formData.grade,
+          academic_session: formData.session,
+          message: formData.message.trim() || undefined,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to submit admission enquiry');
+      }
+
+      setIsSuccess(true);
+    } catch (err: any) {
+      setErrors({ form: err.message || 'Submission failed. Please try again or call the helpline.' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSuccess) {
@@ -112,6 +135,13 @@ export default function AdmissionEnquiryForm({
           <span className="text-xs font-bold text-[#A50026]">Play to XII</span>
         </div>
       </div>
+
+      {errors.form && (
+        <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{errors.form}</span>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-3.5">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
