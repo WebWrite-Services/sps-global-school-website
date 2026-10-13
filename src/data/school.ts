@@ -90,11 +90,11 @@ export const SCHOOL_STATS = [
 
 export const LEADERSHIP: Record<string, LeadershipProfile> = {
   director: {
-    name: "Vishwanath Pratap Singh Yadav (Sonu Yadav)",
+    name: "Shri Vishwanath Pratap Singh Yadav",
     role: "Director",
     designationSubtitle: "Director – SPS Global School",
-    image: "/images/leadership/director-sonu-yadav.jpg",
-    alt: "Vishwanath Pratap Singh Yadav, Director SPS Global School",
+    image: "/images/leadership/director-portrait.jpg",
+    alt: "Shri Vishwanath Pratap Singh Yadav, Director SPS Global School",
     shortQuote: "Our school is dedicated to providing a holistic education that fosters academic excellence, creativity, and character development.",
     fullMessage: [
       "Dear Parents and Students,",
@@ -104,11 +104,11 @@ export const LEADERSHIP: Record<string, LeadershipProfile> = {
     ]
   },
   manager: {
-    name: "Ashutosh Yadav (Tonu Yadav)",
+    name: "Shri Ashutosh Yadav",
     role: "Manager",
     designationSubtitle: "Manager – SPS Global School",
     image: "/images/leadership/manager-ashutosh-yadav.png",
-    alt: "Ashutosh Yadav, Manager SPS Global School",
+    alt: "Shri Ashutosh Yadav, Manager SPS Global School",
     shortQuote: "Our vision is to create a community of learners who are curious, creative, and confident in an inclusive environment.",
     fullMessage: [
       "Dear Parents and Well-wishers,",
@@ -118,11 +118,11 @@ export const LEADERSHIP: Record<string, LeadershipProfile> = {
     ]
   },
   principal: {
-    name: "Mrs. Divya Yadav / Mr. Bhaskar Sharma",
+    name: "Mr. Bhaskar Sharma",
     role: "Principal",
     designationSubtitle: "Principal – SPS Global School",
     image: "/images/leadership/principal.png",
-    alt: "Principal SPS Global School",
+    alt: "Mr. Bhaskar Sharma, Principal SPS Global School",
     shortQuote: "Every child is unique and has the potential to achieve greatness through dedicated mentoring and a love of learning.",
     fullMessage: [
       "Dear Parents and Students,",

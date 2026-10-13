@@ -17,8 +17,8 @@ export const MANDATORY_PUBLIC_DISCLOSURE = {
     { sNo: 2, item: "AFFILIATION NO. (IF APPLICABLE)", detail: "2134255" },
     { sNo: 3, item: "SCHOOL CODE (IF APPLICABLE)", detail: "72221" },
     { sNo: 4, item: "COMPLETE ADDRESS WITH PINCODE", detail: "SPS GLOBAL SCHOOL, NH 19 AGRA ROAD, JASWANTNAGAR ETAWAH, UTTAR PRADESH – 206245" },
-    { sNo: 5, item: "PRINCIPAL NAME", detail: "MRS. DIVYA YADAV" },
-    { sNo: 6, item: "PRINCIPAL QUALIFICATION", detail: "M.A. B.ED." },
+    { sNo: 5, item: "PRINCIPAL NAME", detail: "MR. BHASKAR SHARMA" },
+    { sNo: 6, item: "PRINCIPAL QUALIFICATION", detail: "M.A., M.ED." },
     { sNo: 7, item: "SCHOOL EMAIL ID", detail: "sps.globalschool@gmail.com" },
     { sNo: 8, item: "CONTACT DETAILS (LANDLINE/MOBILE)", detail: "07618307200, 07618407200" }
   ],

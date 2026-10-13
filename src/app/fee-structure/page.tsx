@@ -153,7 +153,7 @@ export default function FeeStructurePage() {
           {/* Official Signatories & Campus Verification */}
           <div className="p-6 rounded-2xl bg-gray-50 border border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-6 text-center text-xs text-gray-600">
             <div>
-              <p className="font-extrabold text-[#242424] text-sm">Ligi Francis / Divya Yadav</p>
+              <p className="font-extrabold text-[#242424] text-sm">Mr. Bhaskar Sharma</p>
               <p className="text-[#A50026] font-semibold">Principal</p>
             </div>
             <div>

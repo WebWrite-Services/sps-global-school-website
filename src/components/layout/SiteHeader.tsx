@@ -37,7 +37,7 @@ export default function SiteHeader() {
 
             {/* ── Real Logo (sps-logo-header.png) ───────────── */}
             <Link href="/" className="flex items-center shrink-0 group">
-              <div className="relative h-11 sm:h-12 md:h-14 lg:h-12 xl:h-14 w-44 sm:w-52 md:w-56 lg:w-48 xl:w-60">
+              <div className="relative h-10 sm:h-12 md:h-14 lg:h-12 xl:h-14 w-36 sm:w-48 md:w-56 lg:w-48 xl:w-60">
                 <Image
                   src="/images/branding/sps-logo-header.png"
                   alt="SPS Global School – N.H 2 Kaisth, Jaswantnagar"

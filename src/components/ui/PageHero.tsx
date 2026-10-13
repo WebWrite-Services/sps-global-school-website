@@ -20,7 +20,7 @@ export default function PageHero({
   backgroundImage = "/images/campus/main-building.jpg"
 }: PageHeroProps) {
   return (
-    <div className="relative bg-[#7A001C] text-white py-12 lg:py-18 overflow-hidden border-b border-[#A50026] shadow-inner">
+    <div data-hero="true" className="relative bg-[#7A001C] text-white py-12 lg:py-18 overflow-hidden border-b border-[#A50026] shadow-inner">
       {/* Background Image with Deep Burgundy & Black Gradient Overlay */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -81,8 +81,11 @@ export default function PageHero({
             </span>
           )}
 
-          {/* Title — Always 100% Crisp Pure White */}
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight animate-fadeInUp delay-100 drop-shadow-sm">
+          {/* Title — Guaranteed 100% Crisp Pure White on all browsers */}
+          <h1
+            style={{ color: "#ffffff" }}
+            className="page-hero-title text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white !text-white leading-tight animate-fadeInUp delay-100 drop-shadow-md"
+          >
             {title}
           </h1>
 
