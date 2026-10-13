@@ -34,7 +34,7 @@ export default function RootLayout({
   const jsonLd = generateSchoolJsonLd();
 
   return (
-    <html lang="en" className={`${manrope.variable} ${inter.variable} h-full`}>
+    <html lang="en" suppressHydrationWarning className={`${manrope.variable} ${inter.variable} h-full`}>
       <head>
         <script
           type="application/ld+json"
@@ -43,7 +43,7 @@ export default function RootLayout({
         <link rel="icon" href="/images/branding/sps-logo.png" type="image/png" />
         <link rel="apple-touch-icon" href="/images/branding/sps-logo.png" />
       </head>
-      <body className="min-h-full flex flex-col antialiased bg-white text-[#242424]">
+      <body suppressHydrationWarning className="min-h-full flex flex-col antialiased bg-white text-[#242424]">
         <AnnouncementBar />
         <SiteHeader />
         <main className="flex-1">{children}</main>

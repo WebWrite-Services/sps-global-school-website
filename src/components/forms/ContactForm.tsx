@@ -162,6 +162,7 @@ export default function ContactForm() {
             placeholder="yourname@gmail.com"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            suppressHydrationWarning
             className={`w-full px-3 py-2 text-xs sm:text-sm rounded-xl border ${
               errors.email ? "border-red-500 bg-red-50/20" : "border-gray-200"
             } focus:border-[#A50026] outline-hidden`}

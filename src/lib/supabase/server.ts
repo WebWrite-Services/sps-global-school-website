@@ -1,8 +1,10 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { connection } from 'next/server'
 import { createDemoClient } from './demo'
 
 export async function createClient() {
+  await connection()
   const cookieStore = await cookies()
 
   if (cookieStore.get('sps_demo_session')?.value === 'super_admin') {
