@@ -12,7 +12,7 @@ import {
   Upload, AlertCircle, ChevronDown
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { uploadFile, validateImageFile } from '@/lib/firebase/storage'
+import { uploadFile, validateImageFile } from '@/lib/supabase/storage'
 import Link from 'next/link'
 
 interface Category { id: string; name: string }

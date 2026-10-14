@@ -1,7 +1,7 @@
 import { createClient } from './client'
 import { v4 as uuidv4 } from 'uuid'
 
-export type UploadFolder = 'gallery' | 'blogs' | 'banners' | 'pages' | 'tc' | 'media'
+export type UploadFolder = 'gallery' | 'blogs' | 'banners' | 'hero-banners' | 'pages' | 'tc' | 'media'
 
 export interface UploadResult {
   storagePath: string
@@ -47,7 +47,7 @@ export async function uploadFile(
   onProgress?.(30)
 
   // Supabase storage upload
-  const { data, error } = await supabase.storage
+  const { error } = await supabase.storage
     .from(bucketName)
     .upload(filePath, file, {
       cacheControl: '3600',

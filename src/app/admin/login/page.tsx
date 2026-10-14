@@ -22,16 +22,8 @@ function LoginContent() {
     setError(null)
     setLoading(true)
 
-    // Demo login handler
-    if (
-      email.trim().toLowerCase() === 'admin@spsglobalschool.com' &&
-      password === 'admin123'
-    ) {
-      document.cookie = 'sps_demo_session=super_admin; path=/; max-age=86400; SameSite=Lax'
-      router.push(redirectTo)
-      router.refresh()
-      return
-    }
+    const emailTrimmed = email.trim().toLowerCase()
+    const isDemoCredentials = emailTrimmed === 'admin@spsglobalschool.com' && password === 'admin123'
 
     try {
       const supabase = createClient()
@@ -41,6 +33,13 @@ function LoginContent() {
       })
 
       if (authError) {
+        // Fallback demo session only when real Supabase auth is unavailable
+        if (isDemoCredentials && authError.message !== 'Invalid login credentials') {
+          document.cookie = 'sps_demo_session=super_admin; path=/; max-age=86400; SameSite=Lax'
+          router.push(redirectTo)
+          router.refresh()
+          return
+        }
         setError(
           authError.message === 'Invalid login credentials'
             ? 'Incorrect email or password. Please try again.'
@@ -53,6 +52,12 @@ function LoginContent() {
       router.push(redirectTo)
       router.refresh()
     } catch (err: any) {
+      if (isDemoCredentials) {
+        document.cookie = 'sps_demo_session=super_admin; path=/; max-age=86400; SameSite=Lax'
+        router.push(redirectTo)
+        router.refresh()
+        return
+      }
       setError(err?.message || 'Login failed. Please try demo credentials.')
       setLoading(false)
     }

@@ -55,8 +55,9 @@ function TCLookupForm() {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.trim()) {
-      setError("Please enter your admission number.");
+    const cleanQuery = query.trim();
+    if (cleanQuery.length < 2) {
+      setError("Please enter your Admission Number or TC Number (at least 2 characters).");
       return;
     }
     setError("");
@@ -64,19 +65,19 @@ function TCLookupForm() {
     setResult(null);
 
     try {
-      const cleanQuery = query.trim();
+      const { data, error: dbError } = await supabase.rpc("lookup_tc", {
+        p_query: cleanQuery,
+      });
 
-      // Search by admission_number or tc_number
-      const { data, error: dbError } = await supabase
-        .from("tc_documents")
-        .select("*")
-        .or(`admission_number.ilike.${cleanQuery},tc_number.ilike.${cleanQuery}`)
-        .maybeSingle();
-
-      if (dbError || !data) {
-        setResult({ found: false });
+      if (dbError) {
+        setError(dbError.message || "Search failed. Please try again.");
       } else {
-        setResult({ found: true, data });
+        const rows = (data ?? []) as TCDocument[];
+        if (rows.length === 0) {
+          setResult({ found: false });
+        } else {
+          setResult({ found: true, data: rows[0] });
+        }
       }
     } catch {
       setResult({ found: false });
@@ -85,19 +86,41 @@ function TCLookupForm() {
     setIsSearching(false);
   };
 
+  const getPdfUrl = (doc: TCDocument): string | null => {
+    if (!doc.storage_path) return null;
+    if (doc.storage_path.startsWith("http")) return doc.storage_path;
+    const parts = doc.storage_path.split("/");
+    const bucket = parts[0];
+    const path = parts.slice(1).join("/");
+    if (!bucket || !path) return null;
+    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+    return data?.publicUrl ?? null;
+  };
+
   const openPdf = (doc: TCDocument) => {
-    if (doc.storage_path) {
-      if (doc.storage_path.startsWith("http")) {
-        window.open(doc.storage_path, "_blank");
-        return;
-      }
-      const parts = doc.storage_path.split("/");
-      const bucket = parts[0];
-      const path = parts.slice(1).join("/");
-      const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-      if (data?.publicUrl) {
-        window.open(data.publicUrl, "_blank");
-      }
+    const url = getPdfUrl(doc);
+    if (url) window.open(url, "_blank");
+  };
+
+  const downloadPdf = async (doc: TCDocument) => {
+    const url = getPdfUrl(doc);
+    if (!url) return;
+    const raw = doc.tc_number || doc.admission_number || doc.student_name || "transfer-certificate";
+    const fileName = `${raw}.pdf`.replace(/[^\w.-]+/g, "_");
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("fetch failed");
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
+    } catch {
+      window.open(url, "_blank");
     }
   };
 
@@ -126,7 +149,7 @@ function TCLookupForm() {
                 style={{ color: "#ffffff" }}
                 className="text-white !text-white text-xs sm:text-sm mt-1 opacity-90"
               >
-                Enter your Admission Number to search and download your official TC document.
+                Enter your Admission Number or TC Number to search and download your official TC document.
               </p>
             </div>
             <span className="hidden sm:inline-flex items-center gap-1 bg-[#FFC52E] text-[#242424] font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider">
@@ -140,14 +163,14 @@ function TCLookupForm() {
           <form onSubmit={handleSearch} className="max-w-xl mx-auto space-y-3.5">
             <div>
               <label className="block text-xs font-semibold text-[#242424] mb-1.5">
-                Student Admission Number <span className="text-[#A50026]">*</span>
+                Admission Number or TC Number <span className="text-[#A50026]">*</span>
               </label>
               <input
                 type="text"
-                placeholder="e.g. SPS2024001"
+                placeholder="e.g. SPS2024001 or TC-2024-001"
                 value={query}
                 onChange={(e) => { setQuery(e.target.value); setError(""); setResult(null); }}
-                maxLength={25}
+                maxLength={40}
                 className={`w-full pl-4 pr-4 py-3 text-sm rounded-xl border bg-white ${
                   error ? "border-red-400 bg-red-50/20" : "border-gray-200"
                 } focus:border-[#A50026] focus:ring-2 focus:ring-[#A50026]/20 outline-none transition-all shadow-xs`}
@@ -235,13 +258,20 @@ function TCLookupForm() {
                   </div>
 
                   {result.data.status === "active" && result.data.storage_path ? (
-                    <div className="pt-2">
+                    <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
+                      <button
+                        onClick={() => downloadPdf(result.data!)}
+                        className="flex-1 inline-flex items-center justify-center gap-2 bg-[#A50026] hover:bg-[#85001F] text-white font-bold py-2.5 px-4 rounded-xl text-xs sm:text-sm shadow-md transition-all cursor-pointer"
+                      >
+                        <Download className="w-4 h-4 text-[#FFC52E]" />
+                        <span>Download TC PDF</span>
+                      </button>
                       <button
                         onClick={() => openPdf(result.data!)}
-                        className="w-full inline-flex items-center justify-center gap-2 bg-[#A50026] hover:bg-[#85001F] text-white font-bold py-2.5 px-4 rounded-xl text-xs sm:text-sm shadow-md transition-all cursor-pointer"
+                        className="flex-1 inline-flex items-center justify-center gap-2 bg-white border border-[#A50026] text-[#A50026] hover:bg-[#FFF7F8] font-bold py-2.5 px-4 rounded-xl text-xs sm:text-sm transition-all cursor-pointer"
                       >
-                        <ExternalLink className="w-4 h-4 text-[#FFC52E]" />
-                        <span>View / Download TC Document (PDF)</span>
+                        <ExternalLink className="w-4 h-4" />
+                        <span>View Online</span>
                       </button>
                     </div>
                   ) : (
@@ -260,7 +290,7 @@ function TCLookupForm() {
                     No TC Record Found
                   </div>
                   <p className="text-xs sm:text-sm text-red-700">
-                    No TC record matches the entered admission number. Please verify the number or contact the school administrative desk.
+                    No TC record found for “{query.trim()}”. Please check the Admission Number / TC Number and try again, or contact the school administrative desk.
                   </p>
                   <a
                     href={`tel:${SCHOOL_INFO.primaryPhone}`}
@@ -293,7 +323,7 @@ export default function TransferCertificatePage() {
       <PageHero
         badge="Official Documentation"
         title="Transfer Certificate (TC)"
-        subtitle="Search and download your official CBSE School Leaving Transfer Certificate by Admission Number."
+        subtitle="Search and download your official CBSE School Leaving Transfer Certificate by Admission Number or TC Number."
         breadcrumbs={[
           { label: "Information", href: "/fee-structure" },
           { label: "Transfer Certificate" }

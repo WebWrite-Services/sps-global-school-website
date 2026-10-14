@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { format } from 'date-fns'
 import { Upload, Search, File, Trash2, Edit2, Plus, Check, X, ExternalLink } from 'lucide-react'
-import { uploadFile, validatePdfFile } from '@/lib/firebase/storage'
+import { uploadFile, validatePdfFile, deleteFile } from '@/lib/supabase/storage'
 import { createClient } from '@/lib/supabase/client'
 
 interface TCDocument {
@@ -26,6 +26,40 @@ interface Props {
   uploadedBy: string
 }
 
+const emptyForm = {
+  student_name: '',
+  admission_number: '',
+  guardian_name: '',
+  class_name: '',
+  academic_session: '',
+  tc_number: '',
+  issue_date: '',
+  internal_notes: '',
+}
+
+type FormState = typeof emptyForm
+
+function Field({ label, field, value, onChange, type = 'text' }: {
+  label: string
+  field: keyof FormState
+  value: string
+  onChange: (field: keyof FormState, value: string) => void
+  type?: string
+}) {
+  return (
+    <div>
+      <label className="text-xs font-semibold text-[#626262] mb-1 block">{label}</label>
+      <input
+        type={type}
+        name={field}
+        value={value}
+        onChange={e => onChange(field, e.target.value)}
+        className="admin-input text-sm"
+      />
+    </div>
+  )
+}
+
 export default function TCManager({ initialDocuments, uploadedBy }: Props) {
   const [documents, setDocuments] = useState(initialDocuments)
   const [showForm, setShowForm] = useState(false)
@@ -37,9 +71,12 @@ export default function TCManager({ initialDocuments, uploadedBy }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
 
-  const emptyForm = { student_name: '', admission_number: '', guardian_name: '', class_name: '', academic_session: '', tc_number: '', issue_date: '', internal_notes: '' }
-  const [form, setForm] = useState(emptyForm)
+  const [form, setForm] = useState<FormState>(emptyForm)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+
+  const handleFieldChange = (field: keyof FormState, value: string) => {
+    setForm(f => ({ ...f, [field]: value }))
+  }
 
   const showToast = (type: 'success' | 'error', msg: string) => {
     setToast({ type, msg }); setTimeout(() => setToast(null), 4000)
@@ -107,14 +144,22 @@ export default function TCManager({ initialDocuments, uploadedBy }: Props) {
       issue_date: form.issue_date || null,
     }
 
+    const previousStoragePath = editDoc?.storage_path ?? ''
+
     if (editDoc) {
       const { data, error } = await supabase.from('tc_documents').update(payload).eq('id', editDoc.id).select().single()
       if (error) { showToast('error', error.message); setUploading(false); return }
       setDocuments(prev => prev.map(d => d.id === editDoc.id ? data : d))
+      if (previousStoragePath && previousStoragePath !== storagePath) {
+        await deleteFile(previousStoragePath).catch(() => {})
+      }
       showToast('success', 'TC document updated')
     } else {
       const { data, error } = await supabase.from('tc_documents').insert(payload).select().single()
-      if (error) { showToast('error', error.message); setUploading(false); return }
+      if (error) {
+        if (storagePath) await deleteFile(storagePath).catch(() => {})
+        showToast('error', error.message); setUploading(false); return
+      }
       setDocuments(prev => [data, ...prev])
       showToast('success', 'TC document added')
     }
@@ -127,13 +172,16 @@ export default function TCManager({ initialDocuments, uploadedBy }: Props) {
     if (!confirm(`Delete TC for "${doc.student_name}"?`)) return
     const { error } = await supabase.from('tc_documents').delete().eq('id', doc.id)
     if (error) { showToast('error', 'Failed'); return }
+    if (doc.storage_path?.startsWith('tc/')) {
+      await deleteFile(doc.storage_path).catch(() => {})
+    }
     setDocuments(prev => prev.filter(d => d.id !== doc.id))
     showToast('success', 'Deleted')
   }
 
   const openEdit = (doc: TCDocument) => {
     setEditDoc(doc)
-    setForm({ student_name: doc.student_name, admission_number: doc.admission_number ?? '', guardian_name: doc.guardian_name ?? '', class_name: doc.class_name, academic_session: doc.academic_session, tc_number: doc.tc_number ?? '', issue_date: doc.issue_date ?? '', internal_notes: doc.internal_notes ?? '' })
+    setForm({ student_name: doc.student_name, admission_number: doc.admission_number ?? '', guardian_name: doc.guardian_name ?? '', class_name: doc.class_name, academic_session: doc.academic_session, tc_number: doc.tc_number ?? '', issue_date: (doc.issue_date ?? '').slice(0, 10), internal_notes: doc.internal_notes ?? '' })
     setShowForm(true)
   }
 
@@ -141,18 +189,6 @@ export default function TCManager({ initialDocuments, uploadedBy }: Props) {
     const q = search.toLowerCase()
     return !search || d.student_name.toLowerCase().includes(q) || (d.tc_number ?? '').toLowerCase().includes(q) || (d.admission_number ?? '').toLowerCase().includes(q)
   })
-
-  const Field = ({ label, field, type = 'text' }: { label: string; field: keyof typeof emptyForm; type?: string }) => (
-    <div>
-      <label className="text-xs font-semibold text-[#626262] mb-1 block">{label}</label>
-      <input
-        type={type}
-        value={form[field]}
-        onChange={e => setForm(f => ({ ...f, [field]: e.target.value }))}
-        className="admin-input text-sm"
-      />
-    </div>
-  )
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
@@ -181,19 +217,19 @@ export default function TCManager({ initialDocuments, uploadedBy }: Props) {
         <div className="bg-white rounded-2xl border border-[#E5E5E5] p-6 mb-6">
           <h3 className="font-bold text-[#242424] mb-4">{editDoc ? 'Edit TC Document' : 'New TC Document'}</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-            <Field label="Student Name *" field="student_name" />
-            <Field label="Admission Number" field="admission_number" />
-            <Field label="Guardian Name" field="guardian_name" />
-            <Field label="Class" field="class_name" />
-            <Field label="Academic Session" field="academic_session" />
-            <Field label="TC Number" field="tc_number" />
-            <Field label="Date of Issue" field="issue_date" type="date" />
+            <Field label="Student Name *" field="student_name" value={form.student_name} onChange={handleFieldChange} />
+            <Field label="Admission Number" field="admission_number" value={form.admission_number} onChange={handleFieldChange} />
+            <Field label="Guardian Name" field="guardian_name" value={form.guardian_name} onChange={handleFieldChange} />
+            <Field label="Class" field="class_name" value={form.class_name} onChange={handleFieldChange} />
+            <Field label="Academic Session" field="academic_session" value={form.academic_session} onChange={handleFieldChange} />
+            <Field label="TC Number" field="tc_number" value={form.tc_number} onChange={handleFieldChange} />
+            <Field label="Date of Issue" field="issue_date" type="date" value={form.issue_date} onChange={handleFieldChange} />
           </div>
           <div className="mb-4">
             <label className="text-xs font-semibold text-[#626262] mb-1 block">Internal Notes</label>
             <textarea
               value={form.internal_notes}
-              onChange={e => setForm(f => ({ ...f, internal_notes: e.target.value }))}
+              onChange={e => handleFieldChange('internal_notes', e.target.value)}
               rows={2} className="admin-input text-sm resize-none"
             />
           </div>

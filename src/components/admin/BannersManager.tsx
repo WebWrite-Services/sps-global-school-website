@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
 import { Plus, Upload, Edit2, Trash2, Eye, EyeOff, Check, X, Move } from 'lucide-react'
-import { uploadFile, validateImageFile } from '@/lib/firebase/storage'
+import { uploadFile, validateImageFile } from '@/lib/supabase/storage'
 import { createClient } from '@/lib/supabase/client'
 import Image from 'next/image'
 

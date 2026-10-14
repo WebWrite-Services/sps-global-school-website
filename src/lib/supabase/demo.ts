@@ -89,6 +89,26 @@ export function createDemoClient(): any {
     removeChannel(ch: any) {
       return Promise.resolve()
     },
+    rpc(name: string, args: Record<string, unknown> = {}) {
+      if (name === 'lookup_tc') {
+        const q = String(args.p_query ?? '').trim().toLowerCase()
+        const rows =
+          q.length >= 2
+            ? MOCK_TC_DOCUMENTS.filter(d => {
+                const admission = String(d.admission_number ?? '').trim().toLowerCase()
+                const tc = String(d.tc_number ?? '').trim().toLowerCase()
+                if (!admission && !tc) return false
+                return (
+                  admission === q ||
+                  tc === q ||
+                  (q.length >= 4 && (admission.includes(q) || tc.includes(q)))
+                )
+              })
+            : []
+        return Promise.resolve({ data: rows, error: null })
+      }
+      return Promise.resolve({ data: null, error: null })
+    },
     from(tableName: string) {
       let currentData = [...getMockTableData(tableName)]
       let isSingle = false

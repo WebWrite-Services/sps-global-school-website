@@ -7,14 +7,26 @@ import GalleryGrid from "@/components/ui/GalleryGrid";
 
 export const instant = false;
 
+interface GalleryRow {
+  id: string;
+  title: string | null;
+  description: string | null;
+  alt_text: string | null;
+  download_url: string | null;
+  gallery_categories: { name: string } | { name: string }[] | null;
+}
+
 export default async function GalleryPage() {
   const supabase = await createClient();
 
   const [{ data: images }, { data: categories }] = await Promise.all([
     supabase
       .from("gallery_images")
-      .select("id, title, description, alt_text, download_url, gallery_categories(name)")
+      .select(
+        "id, title, description, alt_text, download_url, display_order, gallery_categories(name)"
+      )
       .eq("status", "published")
+      .order("display_order", { ascending: true })
       .order("created_at", { ascending: false }),
     supabase
       .from("gallery_categories")
@@ -22,18 +34,26 @@ export default async function GalleryPage() {
       .order("display_order", { ascending: true }),
   ]);
 
-  const galleryImages = (images ?? []).map((img: any) => ({
-    id: img.id,
-    src: img.download_url || "",
-    title: img.title || "Untitled",
-    description: img.description || "",
-    alt: img.alt_text || img.title || "Gallery Image",
-    category: Array.isArray(img.gallery_categories)
-      ? img.gallery_categories[0]?.name || "General"
-      : (img.gallery_categories as { name: string } | null)?.name || "General",
-  })).filter((img: any) => img.src);
+  const galleryImages = ((images ?? []) as GalleryRow[])
+    .map((img) => ({
+      id: img.id,
+      src: img.download_url || "",
+      title: img.title || "Untitled",
+      description: img.description || "",
+      alt: img.alt_text || img.title || "Gallery Image",
+      category: Array.isArray(img.gallery_categories)
+        ? img.gallery_categories[0]?.name || "General"
+        : img.gallery_categories?.name || "General",
+    }))
+    .filter((img) => img.src);
 
-  const categoryNames = ["All", ...(categories ?? []).map((c: any) => c.name)];
+  const usedCategories = new Set(galleryImages.map((img) => img.category));
+  const categoryNames = [
+    "All",
+    ...((categories ?? []) as { name: string }[])
+      .map((c) => c.name)
+      .filter((name) => usedCategories.has(name)),
+  ];
 
   return (
     <>

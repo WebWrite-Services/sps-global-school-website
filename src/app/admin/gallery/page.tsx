@@ -17,6 +17,7 @@ export default async function GalleryPage() {
     supabase
       .from('gallery_images')
       .select('*, gallery_categories(name)')
+      .order('display_order', { ascending: true })
       .order('created_at', { ascending: false }),
     supabase
       .from('gallery_categories')

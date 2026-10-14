@@ -109,8 +109,8 @@ export default function HeroBanner({ slides }: Props) {
         </div>
       )}
 
-      {/* ── Content: Admission Form in Right Corner ───────── */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-14">
+      {/* ── Content: Admission Form in Right Corner (desktop only) ───────── */}
+      <div className="hidden lg:block relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-14">
         <div className="flex justify-end">
           <div className="w-full max-w-md lg:max-w-md animate-fadeInUp">
             <AdmissionEnquiryForm compact={true} className="shadow-2xl bg-white/95 backdrop-blur-md rounded-2xl" />

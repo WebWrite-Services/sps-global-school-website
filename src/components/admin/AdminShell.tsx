@@ -7,12 +7,14 @@ import Image from 'next/image'
 import {
   LayoutDashboard, Images, FileText, File, LayoutTemplate,
   UserCheck, MessageSquare, Globe, Library, Users, Settings,
-  LogOut, ChevronLeft, Menu, X, Bell, Search, ChevronDown
+  LogOut, ChevronLeft, Menu, X, Bell, Search, ChevronDown,
+  Image as ImageIcon
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 const NAV_ITEMS = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+  { href: '/admin/hero-banners', label: 'Hero Banners', icon: ImageIcon },
   { href: '/admin/gallery', label: 'Gallery', icon: Images },
   { href: '/admin/blogs', label: 'Blogs', icon: FileText },
   { href: '/admin/tc', label: 'TC Documents', icon: File },

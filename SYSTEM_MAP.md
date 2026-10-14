@@ -163,8 +163,7 @@ This master document provides instant access to **every file, route, component, 
 | File | Purpose |
 |---|---|
 | [src/lib/seo.ts](file:///Users/webwriteservices/Desktop/SPS_School_Website/src/lib/seo.ts) | SEO metadata generator and schema.org JSON-LD Structured Data builder. |
-| [src/lib/firebase/client.ts](file:///Users/webwriteservices/Desktop/SPS_School_Website/src/lib/firebase/client.ts) | Firebase compatibility shim. |
-| [src/lib/firebase/storage.ts](file:///Users/webwriteservices/Desktop/SPS_School_Website/src/lib/firebase/storage.ts) | Storage proxy forwarding to Supabase storage. |
+| [src/lib/supabase/storage.ts](file:///Users/webwriteservices/Desktop/SPS_School_Website/src/lib/supabase/storage.ts) | Supabase Storage upload/delete helpers + PDF/image validation. Buckets: `tc`, `gallery`, `blogs`, `banners`, `media`, `hero-banners`. |
 
 ---
 
