@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS hero_banners (
   alt_text TEXT DEFAULT '',
   image_path TEXT NOT NULL DEFAULT '',
   image_url TEXT NOT NULL DEFAULT '',
+  device_type TEXT NOT NULL DEFAULT 'both',
   display_order INT NOT NULL DEFAULT 0,
   is_active BOOLEAN NOT NULL DEFAULT false,
   created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,

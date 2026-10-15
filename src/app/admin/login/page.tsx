@@ -96,28 +96,7 @@ function LoginContent() {
           {/* Form */}
           <div className="px-8 py-8">
             <h2 className="text-lg font-bold text-[#242424] mb-1">Welcome back</h2>
-            <p className="text-sm text-[#626262] mb-4">Sign in with your staff credentials</p>
-
-            {/* Demo Login Banner */}
-            <div className="bg-amber-50 border border-amber-200/80 rounded-xl p-3.5 mb-5 text-left">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-bold text-amber-900 tracking-wide uppercase">⚡ Demo Admin Login</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmail('admin@spsglobalschool.com')
-                    setPassword('admin123')
-                  }}
-                  className="text-xs bg-[#A50026] hover:bg-[#85001F] text-white px-2.5 py-1 rounded-md font-semibold transition-colors cursor-pointer shadow-sm"
-                >
-                  Quick Fill
-                </button>
-              </div>
-              <p className="text-xs text-amber-900/80 leading-relaxed">
-                <strong>ID:</strong> <code className="bg-white/70 px-1 py-0.5 rounded">admin@spsglobalschool.com</code><br />
-                <strong>Pass:</strong> <code className="bg-white/70 px-1 py-0.5 rounded">admin123</code>
-              </p>
-            </div>
+             <p className="text-sm text-[#626262] mb-4">Sign in with your staff credentials</p>
 
             {error && (
               <div className="flex items-start gap-3 bg-red-50 border border-red-100 rounded-xl p-4 mb-6">

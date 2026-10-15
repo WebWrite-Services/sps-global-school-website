@@ -137,16 +137,16 @@ export default function AdminShell({ children, title }: AdminShellProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="admin-nav-scroll flex-1 py-3 px-2">
+        <nav className="admin-nav-scroll flex-1 py-3 px-2" suppressHydrationWarning>
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon
             const active = isActive(item)
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 transition-all
+               <Link
+                 key={item.href}
+                 href={item.href}
+                 onClick={() => setMobileOpen(false)}
+                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 transition-all
                   ${active
                     ? 'bg-[#A50026] text-white shadow-sm'
                     : 'text-white/65 hover:text-white hover:bg-white/10'

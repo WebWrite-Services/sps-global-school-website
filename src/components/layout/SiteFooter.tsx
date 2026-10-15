@@ -33,8 +33,7 @@ export default function SiteFooter() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const whatsappPhone = SCHOOL_INFO.primaryPhone.replace(/\D/g, "");
-  const whatsappUrl = `https://wa.me/91${whatsappPhone}?text=Hello%2C%20I%20am%20interested%20in%20admission%20at%20SPS%20Global%20School%20for%20Session%202026-27.%20Please%20guide%20me.`;
+  const whatsappUrl = `https://api.whatsapp.com/send?phone=${SCHOOL_INFO.primaryPhone.replace(/\D/g, "")}&text=Hello%2C+I+am+interested+in+admission+at+SPS+Global+School+for+Session+2026-27.+Please+guide+me.`;
 
   return (
     <>

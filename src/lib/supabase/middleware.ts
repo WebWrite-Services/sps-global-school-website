@@ -36,8 +36,8 @@ export async function updateSession(request: NextRequest) {
   let user = null
   if (!isDemoSession) {
     try {
-      const { data } = await supabase.auth.getUser()
-      user = data?.user || null
+      const { data } = await supabase.auth.getSession()
+      user = data?.session?.user || null
     } catch {}
   }
   const isAuthenticated = !!user || isDemoSession

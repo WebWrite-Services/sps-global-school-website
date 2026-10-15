@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 import AdmissionEnquiryForm from "@/components/forms/AdmissionEnquiryForm";
 
 interface BannerSlide {
@@ -11,46 +12,28 @@ interface BannerSlide {
   alt: string;
   heading?: string;
   description?: string;
-  primaryButtonText?: string;
-  primaryButtonUrl?: string;
-  secondaryButtonText?: string;
-  secondaryButtonUrl?: string;
+  device_type?: string;
 }
 
-const DEFAULT_SLIDES: BannerSlide[] = [
-  {
-    id: "1",
-    image: "/images/students/sps-students-hero.png",
-    alt: "SPS Global School Students & Faculty"
-  },
-  {
-    id: "2",
-    image: "/images/campus/main-building.jpg",
-    alt: "SPS Global School Campus – NH-19 Jaswantnagar"
-  },
-  {
-    id: "3",
-    image: "/images/campus/campus-event.jpg",
-    alt: "SPS Global School Activities and Celebrations"
-  },
-  {
-    id: "4",
-    image: "/images/facilities/composite-science-lab.jpg",
-    alt: "SPS Global School Modern Laboratories"
-  },
-  {
-    id: "5",
-    image: "/images/students/students-in-uniform.jpg",
-    alt: "SPS Global School Students in Assembly"
-  }
-];
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+  return isMobile;
+};
 
 interface Props {
   slides?: BannerSlide[];
 }
 
 export default function HeroBanner({ slides }: Props) {
-  const activeSlides = slides && slides.length > 0 ? slides : DEFAULT_SLIDES;
+  const [activeSlides, setActiveSlides] = useState<BannerSlide[]>([]);
+  const isMobile = useIsMobile();
+  const supabase = createClient();
   const [current, setCurrent] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -64,8 +47,44 @@ export default function HeroBanner({ slides }: Props) {
   const prev = () => goTo((current - 1 + activeSlides.length) % activeSlides.length);
   const next = () => goTo((current + 1) % activeSlides.length);
 
+  useEffect(() => {
+    const fetchBanners = async () => {
+      const device = isMobile ? "mobile" : "desktop";
+      const select = "id,image_url,image_path,device_type,heading,description";
+      // Device-specific banners first (mobile tab images on mobile, desktop tab on desktop)
+      let { data } = await supabase
+        .from("hero_banners")
+        .select(select)
+        .eq("is_active", true)
+        .in("device_type", [device, "both"])
+        .order("display_order");
+      // Fallback: if this device has no banners of its own, show all active ones
+      if (!data || data.length === 0) {
+        ({ data } = await supabase
+          .from("hero_banners")
+          .select(select)
+          .eq("is_active", true)
+          .order("display_order"));
+      }
+      if (!data || data.length === 0) return;
+      setActiveSlides(
+        data.map((b: { id: string; image_url: string; image_path: string; device_type?: string; heading?: string; description?: string }) => ({
+          id: b.id,
+          image: b.image_url || b.image_path,
+          alt: b.heading || "Hero Image",
+          heading: b.heading,
+          description: b.description,
+          device_type: b.device_type,
+        }))
+      );
+      setCurrent(0);
+    };
+    fetchBanners();
+  }, [supabase, isMobile]);
+
   // Auto-advance banner every 5.5 seconds
   useEffect(() => {
+    if (activeSlides.length === 0) return;
     const timer = setInterval(() => {
       setCurrent((c) => (c + 1) % activeSlides.length);
     }, 5500);
